@@ -8,6 +8,11 @@ All credits goes to [the example code in crystal-vips](https://github.com/naqvis
 
 ## Installation
 
+You need install libvps correctly before use this shard.
+
+check [pre-requisites](https://github.com/zw963/crystal-vips?tab=readme-ov-file#pre-requisites) for details
+
+
 1. Add the dependency to your `shard.yml`:
 
    ```yaml
@@ -31,12 +36,14 @@ captcha.write_html_file("a.html")
 # Return underlying image data as Bytes
 captcha.buffer # Bytes[82, 73, 70, 70, 16 ... ]
 
-# A string present the html <image> tag which enbed the image in, use it directly in your page.
+# A <img> tag string which enbed the image in can use in HTML page.
 captcha.image_tag # <img src="data:image/webp;base64,BASE64_ENCODED_IMAGE_DATA" />
 
 # return the underlying text
 captcha.text # nh8S8G
 ```
+
+More usage, check [spec](spec/captcha_spec.cr)
 
 TODO: Write usage instructions here
 

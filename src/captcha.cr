@@ -11,7 +11,7 @@ class Captcha
   getter! image_tag : String
   getter! text : String
 
-  def initialize(length : Int32 = 4, text : String? = nil, format : String = "webp")
+  def initialize(text : String? = nil, length : Int32 = 4, @format : String = "webp")
     text = Random.base58(length) if text.nil?
     @text = text
 
@@ -68,9 +68,11 @@ class Captcha
     )
 
     @buffer = final.write_to_buffer("%.#{format}")
+  end
 
-    @image_tag = <<-HEREDOC
-<img src="data:image/#{format};base64,#{Base64.encode(buffer)}"/>
+  def image_tag
+    @image_tag ||= <<-HEREDOC
+<img src="data:image/#{@format};base64,#{Base64.encode(@buffer.not_nil!)}"/>
 HEREDOC
   end
 
