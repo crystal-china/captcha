@@ -1,0 +1,13 @@
+name: captcha
+version: 0.1.0
+
+authors:
+  - Billy.Zheng <vil963@gmail.com>
+
+dependencies:
+  vips:
+    github: zw963/crystal-vips
+
+crystal: '>= 1.16.3'
+
+license: MIT
