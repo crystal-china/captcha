@@ -6,11 +6,21 @@ describe Captcha do
     captcha.text.should eq "abcD1234"
     captcha.buffer.should be_a Bytes
     captcha.image_tag.should start_with("<img")
+    captcha.image_tag.should contain("data:image/webp;base64")
   end
 
   it "passing number work" do
-    captcha = Captcha.new(length: 6)
+    captcha = Captcha.new(length: 6, format: "png")
     captcha.text.size.should eq 6
+    captcha.buffer.should be_a Bytes
+    captcha.image_tag.should start_with("<img")
+    captcha.image_tag.should contain("data:image/png;base64")
+    (captcha.image_tag.size > 20000).should be_true
+  end
+
+  it "use default work" do
+    captcha = Captcha.new
+    captcha.text.size.should eq 4
     captcha.buffer.should be_a Bytes
     captcha.image_tag.should start_with("<img")
   end

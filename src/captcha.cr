@@ -8,7 +8,6 @@ require "base58"
 
 class Captcha
   getter! buffer : Bytes
-  getter! image_tag : String
   getter! text : String
 
   def initialize(text : String? = nil, length : Int32 = 4, @format : String = "webp")
@@ -88,7 +87,7 @@ HEREDOC
 
   <body>
     <h1>显示 captcha 图片</h1>
-    #{@image_tag}
+    #{image_tag}
   </body>
 </html>
 HEREDOC
@@ -142,3 +141,5 @@ HEREDOC
     image.mapim(xy)
   end
 end
+
+Captcha.new.write_html_file("c.html")
