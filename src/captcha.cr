@@ -69,13 +69,25 @@ class Captcha
     @buffer = final.write_to_buffer("%.#{format}")
   end
 
-  def image_tag
-    @image_tag ||= <<-HEREDOC
-<img src="data:image/#{@format};base64,#{Base64.encode(@buffer.not_nil!)}"/>
+  def img_tag(width : String? = nil, height : String? = nil) : String
+    String.build do |io|
+      io << <<-HEREDOC
+<img src="data:image/#{@format};base64,#{Base64.encode(@buffer.not_nil!)}"
 HEREDOC
+
+      if width && height
+        io << " style=\"width: #{width}; height: #{height};\""
+      elsif width
+        io << " style=\"width: #{width};\""
+      elsif height
+        io << " style=\"height: #{height};\""
+      end
+
+      io << " />"
+    end
   end
 
-  def write_html_file(name)
+  def write_html_file(name) : Nil
     html = <<-HEREDOC
 <!DOCTYPE html>
 <html lang="en">
@@ -87,7 +99,7 @@ HEREDOC
 
   <body>
     <h1>显示 captcha 图片</h1>
-    #{image_tag}
+    #{img_tag}
   </body>
 </html>
 HEREDOC
@@ -141,5 +153,3 @@ HEREDOC
     image.mapim(xy)
   end
 end
-
-Captcha.new.write_html_file("c.html")

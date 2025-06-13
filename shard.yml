@@ -8,6 +8,7 @@ authors:
 dependencies:
   vips:
     github: zw963/crystal-vips
+    branch: main
   base58:
     github: crystal-china/base58.cr
 

@@ -5,7 +5,7 @@ Crystal library that generates image CAPTCHAs.
 ![](images/example.webp)
 
 All credits goes to [the example code in crystal-vips](https://github.com/naqvis/crystal-vips/blob/0f4d3914985865a020168b0f48ece07416eeb459/example/captcha_generator.cr) by [@naqvis](https://github.com/naqvis), and the
-users's discussion in [this](https://github.com/libvips/libvips/issues/898) issues.
+users's discussion in [this issue](https://github.com/libvips/libvips/issues/898).
 
 ## Installation
 
