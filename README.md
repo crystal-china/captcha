@@ -51,7 +51,6 @@ More usage, check [spec](spec/captcha_spec.cr)
 You should use this shards with a [memory cache](https://github.com/crystal-cache/cache), consider refer to following links
 for a really production usecase of this shards with lucky.
 
-
 ### create a cache.
 
 [config/application.cr](https://github.com/crystal-china/website/blob/e779d785c79eadd40068d1a4fd2bdfbe87ff8ad4/config/application.cr#L31)
@@ -69,6 +68,10 @@ as value, and render the img_tag.
 Get the captcha_id from cookie, then retrive the captcha text from the cache
 
 [sign_ups/create.cr](https://github.com/crystal-china/website/blob/e779d785c79eadd40068d1a4fd2bdfbe87ff8ad4/src/actions/sign_ups/create.cr#L5-L10)
+
+## limit
+
+AFAIK, if you use this shards, you can't built static Crystal binary anymore.
 
 
 ## Development

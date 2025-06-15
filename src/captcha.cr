@@ -7,17 +7,17 @@ require "base58"
 # Reference: https://github.com/libvips/libvips/issues/898
 
 class Captcha
-  getter! buffer : Bytes
-  getter! text : String
+  getter buffer : Bytes
+  getter code : String
 
-  def initialize(text : String? = nil, length : Int32 = 4, @format : String = "webp")
-    text = Random.base58(length) if text.nil?
-    @text = text
+  def initialize(code : String? = nil, length : Int32 = 4, @format : String = "webp")
+    code = Random.base58(length) if code.nil?
+    @code = code
 
-    text_layer = Vips::Image.black 1, 1
+    code_layer = Vips::Image.black 1, 1
     x_position = 0
 
-    text.each_char do |c|
+    code.each_char do |c|
       letter, _ = Vips::Image.text(c.to_s, dpi: 600)
 
       image = letter.gravity(
@@ -32,25 +32,25 @@ class Captcha
       image = nine_bit_srgb(image)
       image = position_to(image: image, x: x_position, y: 0)
 
-      text_layer += image
-      text_layer = text_layer.cast(Vips::Enums::BandFormat::Uchar)
+      code_layer += image
+      code_layer = code_layer.cast(Vips::Enums::BandFormat::Uchar)
 
       x_position += letter.width
     end
 
     # remove any unused edges
-    text_layer = text_layer.crop(*text_layer.find_trim(background: 0))
+    code_layer = code_layer.crop(*code_layer.find_trim(background: 0))
 
-    # make an alpha for the text layer: just a mono version of the image, but scaled
+    # make an alpha for the code layer: just a mono version of the image, but scaled
     # up so letters themeselves are not transparent
-    alpha = (text_layer.colourspace(space: Vips::Enums::Interpretation::Bw) * 3)
+    alpha = (code_layer.colourspace(space: Vips::Enums::Interpretation::Bw) * 3)
       .cast(format: Vips::Enums::BandFormat::Uchar)
-    text_layer = text_layer.bandjoin(alpha)
+    code_layer = code_layer.bandjoin(alpha)
 
     # make a white background with random speckles
     speckles = Vips::Image.gaussnoise(
-      width: text_layer.width,
-      height: text_layer.height,
+      width: code_layer.width,
+      height: code_layer.height,
       mean: 400,
       sigma: 200,
     )
@@ -60,9 +60,9 @@ class Captcha
       ).cast(format: Vips::Enums::BandFormat::Uchar)
     end
 
-    # composite the text over the background
+    # composite the code over the background
     final = background.composite(
-      image: text_layer,
+      image: code_layer,
       mode: Vips::Enums::BlendMode::Over
     )
 
