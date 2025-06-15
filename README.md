@@ -71,12 +71,9 @@ Get the captcha_id from cookie, then retrive the captcha text from the cache
 
 ## limit
 
-AFAIK, if you use this shards, you can't built static Crystal binary anymore.
-
-
-## Development
-
-TODO: Write development instructions here
+You can't built static Crystal binary because libvips is a dependency, if this is
+a problem for you, please check [simple_captcha](https://github.com/crystal-lang/simple_captcha), these two libraries should be
+interchangeable without the need to change you code.
 
 ## Contributing
 
