@@ -7,8 +7,8 @@ require "base58"
 # Reference: https://github.com/libvips/libvips/issues/898
 
 class Captcha
-  getter buffer : Bytes
   getter code : String
+  @final : Vips::Image
 
   def initialize(code : String? = nil, length : Int32 = 4, @format : String = "webp")
     code = Random.base58(length) if code.nil?
@@ -61,18 +61,21 @@ class Captcha
     end
 
     # composite the code over the background
-    final = background.composite(
+    @final = background.composite(
       image: code_layer,
       mode: Vips::Enums::BlendMode::Over
     )
+  end
 
-    @buffer = final.write_to_buffer("%.#{format}")
+  def base64
+    slice = @final.write_to_buffer("%.#{@format}")
+    @base64 ||= Base64.encode(slice)
   end
 
   def img_tag(width : String? = nil, height : String? = nil) : String
     String.build do |io|
       io << <<-HEREDOC
-<img src="data:image/#{@format};base64,#{Base64.encode(@buffer.not_nil!)}"
+<img src="data:image/#{@format};base64,#{base64}"
 HEREDOC
 
       if width && height

@@ -31,8 +31,8 @@ require "captcha"
 
 captcha = Captcha.new(length: 6)
 
-# Return underlying image data as Bytes
-captcha.buffer # Bytes[82, 73, 70, 70, 16 ... ]
+# Return image as base64 string.
+captcha.base64
 
 # A <img> tag string which enbed the image in can use in HTML page.
 captcha.img_tag # <img src="data:image/webp;base64,BASE64_ENCODED_IMAGE_DATA" />
@@ -43,8 +43,8 @@ captcha.img_tag(height: "50px", width: "100px")
 # you can use #write_html_file to preview how the captcha looks like in a html file.
 captcha.write_html_file("test.html")
 
-# return the underlying text
-captcha.text # nh8S8G
+# return the underlying captcha code
+captcha.code # nh8S8G
 ```
 More usage, check [spec](spec/captcha_spec.cr)
 
