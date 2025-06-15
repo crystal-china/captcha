@@ -6,7 +6,7 @@ require "base58"
 # Captcha generator
 # Reference: https://github.com/libvips/libvips/issues/898
 
-class Captcha
+class CaptchaGenerator
   getter code : String
   @final : Vips::Image
 
@@ -68,8 +68,8 @@ class Captcha
   end
 
   def base64
-    slice = @final.write_to_buffer("%.#{@format}")
-    @base64 ||= Base64.encode(slice)
+    # write_to_buffer return a slice
+    @base64 ||= Base64.encode(@final.write_to_buffer("%.#{@format}"))
   end
 
   def img_tag(width : String? = nil, height : String? = nil) : String

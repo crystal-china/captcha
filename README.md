@@ -29,7 +29,7 @@ check [pre-requisites](https://github.com/zw963/crystal-vips?tab=readme-ov-file#
 ```crystal
 require "captcha"
 
-captcha = Captcha.new(length: 6)
+captcha = CaptchaGenerator.new(length: 6)
 
 # Return image as base64 string.
 captcha.base64

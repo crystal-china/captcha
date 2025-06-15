@@ -1,8 +1,8 @@
 require "./spec_helper"
 
-describe Captcha do
+describe CaptchaGenerator do
   it "passing string works" do
-    captcha = Captcha.new("abcD1234")
+    captcha = CaptchaGenerator.new("abcD1234")
     captcha.code.should eq "abcD1234"
     captcha.base64.should be_a String
     captcha.img_tag.should start_with("<img")
@@ -10,7 +10,7 @@ describe Captcha do
   end
 
   it "passing number work" do
-    captcha = Captcha.new(length: 6, format: "png")
+    captcha = CaptchaGenerator.new(length: 6, format: "png")
     captcha.code.size.should eq 6
     captcha.base64.should be_a String
     captcha.img_tag.should start_with("<img")
@@ -19,7 +19,7 @@ describe Captcha do
   end
 
   it "use default work" do
-    captcha = Captcha.new
+    captcha = CaptchaGenerator.new
     captcha.code.size.should eq 4
     captcha.base64.should be_a String
     captcha.img_tag.should start_with("<img")
