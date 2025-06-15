@@ -61,13 +61,13 @@ for a really production usecase of this shards with lucky.
 create a browser cookie as captcha_id, then use this id as cache key, and captcha text
 as value, and render the img_tag.
 
-[src/actions/htmx/captcha.cr](https://github.com/crystal-china/website/blob/e779d785c79eadd40068d1a4fd2bdfbe87ff8ad4/src/actions/htmx/captcha.cr#L8-L23)
+[src/actions/htmx/captcha.cr](https://github.com/crystal-china/website/blob/44af7286f8165ca376a3b84c3af538103bd3243d/src/actions/htmx/captcha.cr#L8-L22)
 
 ### get the captcha text from cache use cookie.
 
 Get the captcha_id from cookie, then retrive the captcha text from the cache
 
-[sign_ups/create.cr](https://github.com/crystal-china/website/blob/e779d785c79eadd40068d1a4fd2bdfbe87ff8ad4/src/actions/sign_ups/create.cr#L5-L10)
+[src/actions/sign_ups/create.cr](https://github.com/crystal-china/website/blob/44af7286f8165ca376a3b84c3af538103bd3243d/src/actions/sign_ups/create.cr#L5-L19)
 
 ## limit
 
