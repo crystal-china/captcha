@@ -56,24 +56,24 @@ for a really production usecase of this shards with lucky.
 [config/application.cr](https://github.com/crystal-china/website/blob/e779d785c79eadd40068d1a4fd2bdfbe87ff8ad4/config/application.cr#L31)
 
 
-### use browser cookie as captcha id to cache the captcha text.
+### Generate a random unique signup_captcha_id and save to cookie.
 
-create a browser cookie as captcha_id, then use this id as cache key, and captcha text
-as value, and render the img_tag.
+Then use this random id as key, save the captcha code into cache and render the img_tag
 
 [src/actions/htmx/captcha.cr](https://github.com/crystal-china/website/blob/44af7286f8165ca376a3b84c3af538103bd3243d/src/actions/htmx/captcha.cr#L8-L22)
 
-### get the captcha text from cache use cookie.
+### get the captcha code from cache use cookie.
 
-Get the captcha_id from cookie, then retrive the captcha text from the cache
+Get the captcha_id from cookie, then retrive the captcha code from the cache, check the equality.
 
 [src/actions/sign_ups/create.cr](https://github.com/crystal-china/website/blob/44af7286f8165ca376a3b84c3af538103bd3243d/src/actions/sign_ups/create.cr#L5-L19)
 
 ## limit
 
-You can't built static Crystal binary because libvips is a dependency, if this is
-a problem for you, please check [simple_captcha](https://github.com/crystal-lang/simple_captcha), these two libraries should be
-interchangeable without the need to change you code.
+You can't create a fully static Crystal binary because it relies on libvips as a dependency. 
+If that’s an issue for you, you might want to check out [simple_captcha](https://github.com/crystal-lang/simple_captcha). 
+
+These two libraries should work interchangeably, so you shouldn’t need to change your code.
 
 ## Contributing
 
