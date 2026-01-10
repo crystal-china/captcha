@@ -1,18 +1,38 @@
-# Stolen from https://github.com/naqvis/crystal-vips/blob/0f4d3914985865a020168b0f48ece07416eeb459/example/captcha_generator.cr
-
 require "crimage"
 require "base58"
+require "base64"
 
 class CaptchaGenerator
   getter code : String
   @final : CrImage::RGBA
 
-  def initialize(code : String? = nil, length : Int32 = 4, @format : String = "webp", width : Int32 = 300, height : Int32 = 100, noise_level : Int32 = 25, line_count : Int32 = 6)
+  EMBEDDED_FONT_TTF = {{ read_file("#{__DIR__}/../assets/fonts/Roboto-Bold.ttf") }}
+
+  @@embedded_font_path : String? = nil
+
+  protected def self.embedded_font_path : String
+    @@embedded_font_path ||= begin
+      f = File.tempfile("captcha-font", ".ttf")
+      f.write(EMBEDDED_FONT_TTF.to_slice) # 二进制写入
+      f.close
+
+      # 退出时清理
+      at_exit do
+        begin
+          File.delete(f.path)
+        rescue
+        end
+      end
+
+      f.path
+    end
+  end
+
+  def initialize(code : String? = nil, length : Int32 = 4, @format : String = "webp", width : Int32 = 300, height : Int32 = 100, noise_level : Int32 = 25, line_count : Int32 = 6, font_path : String? = nil)
     code = Random.base58(length) if code.nil?
     @code = code
 
-    font_path = File.expand_path("../assets/fonts/Roboto-Bold.ttf", __DIR__)
-    raise "Font not found: #{font_path}" unless File.exists?(font_path)
+    path = font_path || self.class.embedded_font_path
 
     options = CrImage::Util::Captcha::Options.new(
       width: width,
@@ -21,7 +41,7 @@ class CaptchaGenerator
       line_count: line_count
     )
 
-    @final = CrImage::Util::Captcha.generate(code, font_path, options)
+    @final = CrImage::Util::Captcha.generate(code, path, options)
   end
 
   def base64 : String
