@@ -1,75 +1,52 @@
 # Stolen from https://github.com/naqvis/crystal-vips/blob/0f4d3914985865a020168b0f48ece07416eeb459/example/captcha_generator.cr
 
-require "vips"
+require "crimage"
 require "base58"
-
-# Captcha generator
-# Reference: https://github.com/libvips/libvips/issues/898
 
 class CaptchaGenerator
   getter code : String
-  @final : Vips::Image
+  @final : CrImage::RGBA
 
-  def initialize(code : String? = nil, length : Int32 = 4, @format : String = "webp")
+  def initialize(code : String? = nil, length : Int32 = 4, @format : String = "webp", width : Int32 = 300, height : Int32 = 100, noise_level : Int32 = 25, line_count : Int32 = 6)
     code = Random.base58(length) if code.nil?
     @code = code
 
-    code_layer = Vips::Image.black 1, 1
-    x_position = 0
+    font_path = File.expand_path("../assets/fonts/Roboto-Bold.ttf", __DIR__)
+    raise "Font not found: #{font_path}" unless File.exists?(font_path)
 
-    code.each_char do |c|
-      letter, _ = Vips::Image.text(c.to_s, dpi: 600)
-
-      image = letter.gravity(
-        direction: Vips::Enums::CompassDirection::Centre,
-        width: letter.width + 50,
-        height: letter.height + 50
-      )
-
-      image = scale_and_rotate(image)
-      image = wobble(image)
-      image = random_color(image)
-      image = nine_bit_srgb(image)
-      image = position_to(image: image, x: x_position, y: 0)
-
-      code_layer += image
-      code_layer = code_layer.cast(Vips::Enums::BandFormat::Uchar)
-
-      x_position += letter.width
-    end
-
-    # remove any unused edges
-    code_layer = code_layer.crop(*code_layer.find_trim(background: 0))
-
-    # make an alpha for the code layer: just a mono version of the image, but scaled
-    # up so letters themeselves are not transparent
-    alpha = (code_layer.colourspace(space: Vips::Enums::Interpretation::Bw) * 3)
-      .cast(format: Vips::Enums::BandFormat::Uchar)
-    code_layer = code_layer.bandjoin(alpha)
-
-    # make a white background with random speckles
-    speckles = Vips::Image.gaussnoise(
-      width: code_layer.width,
-      height: code_layer.height,
-      mean: 400,
-      sigma: 200,
+    options = CrImage::Util::Captcha::Options.new(
+      width: width,
+      height: height,
+      noise_level: noise_level,
+      line_count: line_count
     )
-    background = (1..3).reduce(speckles) do |a, _|
-      a.bandjoin(speckles).copy(
-        interpretation: Vips::Enums::Interpretation::Srgb
-      ).cast(format: Vips::Enums::BandFormat::Uchar)
-    end
 
-    # composite the code over the background
-    @final = background.composite(
-      image: code_layer,
-      mode: Vips::Enums::BlendMode::Over
-    )
+    @final = CrImage::Util::Captcha.generate(code, font_path, options)
   end
 
-  def base64
-    # write_to_buffer return a slice
-    @base64 ||= Base64.encode(@final.write_to_buffer("%.#{@format}"))
+  def base64 : String
+    @base64 ||= begin
+      io = IO::Memory.new
+      case @format.downcase
+      when "png"
+        CrImage::PNG.write(io, @final)
+      when "jpg", "jpeg"
+        CrImage::JPEG.write(io, @final, 90)
+      when "webp"
+        CrImage::WEBP.write(io, @final)
+      when "bmp"
+        CrImage::BMP.write(io, @final)
+      when "gif"
+        CrImage::GIF.write(io, @final)
+      when "tif", "tiff"
+        CrImage::TIFF.write(io, @final)
+      else
+        @format = "webp"
+        CrImage::WEBP.write(io, @final)
+      end
+
+      Base64.strict_encode(io.to_slice)
+    end
   end
 
   def img_tag(width : String? = nil, height : String? = nil) : String
@@ -108,51 +85,5 @@ HEREDOC
 HEREDOC
 
     File.write(name, html)
-  end
-
-  # position at our write position in the image
-  private def position_to(image, x, y)
-    image.embed(x, y, image.width + x, image.height + y)
-  end
-
-  # random scale and rotate
-  private def scale_and_rotate(image)
-    image.similarity(
-      scale: Random.rand(0.2) + 0.8,
-      angle: Random.rand(40) - 20
-    )
-  end
-
-  # random color
-  private def random_color(image)
-    color = (1..3).map { Random.rand(255) }
-    image.ifthenelse(color, 0, true)
-  end
-
-  # tag as 9-bit srgb
-  private def nine_bit_srgb(image)
-    image.copy(
-      interpretation: Vips::Enums::Interpretation::Srgb
-    ).cast(Vips::Enums::BandFormat::Uchar)
-  end
-
-  # random wobble
-  private def wobble(image)
-    # a warp image is a 2D grid containing the new coordinates of each pixel with
-    # the new x in band 0 and the new y in band 1
-    #
-    # you can also use a complex image
-    #
-    # start from a low-res XY image and distort it
-
-    xy = Vips::Image.xyz(image.width // 20, image.height // 20)
-    x_distort = Vips::Image.gaussnoise(xy.width, xy.height)
-    y_distort = Vips::Image.gaussnoise(xy.width, xy.height)
-    xy += (x_distort.bandjoin(y_distort) / 150)
-    xy = xy.resize(20)
-    xy *= 20
-
-    # apply the warp
-    image.mapim(xy)
   end
 end

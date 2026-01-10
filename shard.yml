@@ -6,8 +6,8 @@ authors:
   - Billy.Zheng <vil963@gmail.com>
 
 dependencies:
-  vips:
-    github: zw963/crystal-vips
+  crimage:
+    github: naqvis/crimage
     branch: main
   base58:
     github: crystal-china/base58.cr
