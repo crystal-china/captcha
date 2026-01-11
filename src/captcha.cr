@@ -6,33 +6,24 @@ class CaptchaGenerator
   getter code : String
   @final : CrImage::RGBA
 
-  EMBEDDED_FONT_TTF = {{ read_file("#{__DIR__}/../assets/fonts/Roboto-Bold.ttf") }}
-
-  @@embedded_font_path : String? = nil
-
-  protected def self.embedded_font_path : String
-    @@embedded_font_path ||= begin
-      f = File.tempfile("captcha-font", ".ttf")
-      f.write(EMBEDDED_FONT_TTF.to_slice) # 二进制写入
-      f.close
-
-      # 退出时清理
-      at_exit do
-        begin
-          File.delete(f.path)
-        rescue
-        end
-      end
-
-      f.path
-    end
-  end
-
-  def initialize(code : String? = nil, length : Int32 = 4, @format : String = "webp", width : Int32 = 300, height : Int32 = 100, noise_level : Int32 = 25, line_count : Int32 = 6, font_path : String? = nil)
+  def initialize(code : String? = nil, length : Int32 = 4, @format : String = "webp", width : Int32 = 300, height : Int32 = 100, noise_level : Int32 = 20, line_count : Int32 = 6, font_path : String? = nil)
     code = Random.base58(length) if code.nil?
     @code = code
 
-    path = font_path || self.class.embedded_font_path
+    # Use font config to search sans-serif(系统默认无衬线) fonts
+    font_path = font_path || `fc-match -f '%{file}' sans-serif`
+
+    unless File.exists?(font_path)
+      puts "Error: Font file not found: #{font_path}"
+      puts ""
+      puts "Please download a font. Quick options:"
+      puts "  1. Download Roboto from https://fonts.google.com/specimen/Roboto"
+      puts "  2. Extract Roboto-Bold.ttf to fonts/Roboto/static/"
+      puts "  3. Or use a system font with -f option"
+      puts ""
+      puts "See https://github.com/naqvis/crimage/blob/main/fonts/README.md for more details."
+      exit 1
+    end
 
     options = CrImage::Util::Captcha::Options.new(
       width: width,
@@ -41,7 +32,7 @@ class CaptchaGenerator
       line_count: line_count
     )
 
-    @final = CrImage::Util::Captcha.generate(code, path, options)
+    @final = CrImage::Util::Captcha.generate(code, font_path, options)
   end
 
   def base64 : String
