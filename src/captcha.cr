@@ -1,13 +1,11 @@
 require "crimage"
-require "base58"
-require "base64"
 
 class CaptchaGenerator
   getter code : String
   @final : CrImage::RGBA
 
   def initialize(code : String? = nil, length : Int32 = 4, @format : String = "webp", width : Int32 = 300, height : Int32 = 100, noise_level : Int32 = 20, line_count : Int32 = 6, font_path : String? = nil)
-    code = Random.base58(length) if code.nil?
+    code = CrImage::Util::Captcha.random_text(length) if code.nil?
     @code = code
 
     # Use font config to search sans-serif(系统默认无衬线) fonts
