@@ -112,7 +112,7 @@ HEREDOC
       if path.blank? || !File.exists?(path)
         puts "Error: Font file not found: #{path}"
         puts ""
-        puts "Please download a font, or install a fonts use your's package manager."
+        puts "Please download a font, or install one with your package manager."
         puts "Quick options:"
         puts "  1. Download Roboto from https://fonts.google.com/specimen/Roboto"
         puts "  2. Extract Roboto-Bold.ttf to fonts/Roboto/static/"
@@ -125,7 +125,7 @@ HEREDOC
 
       path
     rescue File::NotFoundError
-      puts "Error: No fontconfig installed, please install it with:"
+      puts "Error: fontconfig is not installed. Please install it with:"
       puts ""
       puts "alpine: apk add --no-cache fontconfig ttf-dejavu"
       puts "Ubuntu: apt-get install -y --no-install-recommends fontconfig"
