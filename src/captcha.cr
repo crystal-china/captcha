@@ -8,20 +8,7 @@ class CaptchaGenerator
     code = CrImage::Util::Captcha.random_text(length) if code.nil?
     @code = code
 
-    # Use font config to search sans-serif(系统默认无衬线) fonts
-    font_path = font_path || `fc-match -f '%{file}' sans-serif`
-
-    unless File.exists?(font_path)
-      puts "Error: Font file not found: #{font_path}"
-      puts ""
-      puts "Please download a font. Quick options:"
-      puts "  1. Download Roboto from https://fonts.google.com/specimen/Roboto"
-      puts "  2. Extract Roboto-Bold.ttf to fonts/Roboto/static/"
-      puts "  3. Or use a system font with -f option"
-      puts ""
-      puts "See https://github.com/naqvis/crimage/blob/main/fonts/README.md for more details."
-      exit 1
-    end
+    font_path = resolve_font_path(font_path)
 
     options = CrImage::Util::Captcha::Options.new(
       width: width,
@@ -34,28 +21,29 @@ class CaptchaGenerator
   end
 
   def base64 : String
-    @base64 ||= begin
-      io = IO::Memory.new
-      case @format.downcase
-      when "png"
-        CrImage::PNG.write(io, @final)
-      when "jpg", "jpeg"
-        CrImage::JPEG.write(io, @final, 90)
-      when "webp"
-        CrImage::WEBP.write(io, @final)
-      when "bmp"
-        CrImage::BMP.write(io, @final)
-      when "gif"
-        CrImage::GIF.write(io, @final)
-      when "tif", "tiff"
-        CrImage::TIFF.write(io, @final)
-      else
-        @format = "webp"
-        CrImage::WEBP.write(io, @final)
-      end
+    @base64 ||=
+      begin
+        io = IO::Memory.new
+        case @format.downcase
+        when "png"
+          CrImage::PNG.write(io, @final)
+        when "jpg", "jpeg"
+          CrImage::JPEG.write(io, @final, 90)
+        when "webp"
+          CrImage::WEBP.write(io, @final)
+        when "bmp"
+          CrImage::BMP.write(io, @final)
+        when "gif"
+          CrImage::GIF.write(io, @final)
+        when "tif", "tiff"
+          CrImage::TIFF.write(io, @final)
+        else
+          @format = "webp"
+          CrImage::WEBP.write(io, @final)
+        end
 
-      Base64.strict_encode(io.to_slice)
-    end
+        Base64.strict_encode(io.to_slice)
+      end
   end
 
   def img_tag(width : String? = nil, height : String? = nil) : String
@@ -94,5 +82,56 @@ HEREDOC
 HEREDOC
 
     File.write(name, html)
+  end
+
+  # Use font config to search sans-serif(系统默认无衬线) fonts
+  private def resolve_font_path(font_path : String?) : String
+    return font_path unless font_path.blank?
+
+    output = IO::Memory.new
+    error = IO::Memory.new
+
+    begin
+      status = Process.run(
+        "fc-match",
+        ["-f", "%{file}", "sans-serif"],
+        output: output,
+        error: error
+      )
+      path = output.to_s.chomp
+
+      unless status.success?
+        puts "Error: Running fc-match failed."
+        puts ""
+        puts error.to_s.chomp
+        puts ""
+
+        exit 1
+      end
+
+      if path.blank? || !File.exists?(path)
+        puts "Error: Font file not found: #{path}"
+        puts ""
+        puts "Please download a font, or install a fonts use your's package manager."
+        puts "Quick options:"
+        puts "  1. Download Roboto from https://fonts.google.com/specimen/Roboto"
+        puts "  2. Extract Roboto-Bold.ttf to fonts/Roboto/static/"
+        puts "  3. Or use a system font with -f option"
+        puts ""
+        puts "See https://github.com/naqvis/crimage/blob/main/fonts/README.md for more details."
+
+        exit 1
+      end
+
+      path
+    rescue File::NotFoundError
+      puts "Error: No fontconfig installed, please install it with:"
+      puts ""
+      puts "alpine: apk add --no-cache fontconfig ttf-dejavu"
+      puts "Ubuntu: apt-get install -y --no-install-recommends fontconfig"
+      puts ""
+
+      exit 1
+    end
   end
 end
